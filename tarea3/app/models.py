@@ -6,9 +6,9 @@ from django.contrib.auth.models import User
 
 
 class Vendedor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     foto_perfil = models.FilePathField(
-        path=os.path.join(settings.BASE_DIR, "app/static/"),
+        path=os.path.join(settings.BASE_DIR, "app/static/uploads/avatars"),
         default=os.path.join(settings.BASE_DIR, "app/static/dummy.png"),
     )
     OPCIONES_ACTIVIDAD = (
@@ -68,7 +68,7 @@ class Producto(models.Model):
 
 
 class Alumno(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Seguimiento(models.Model):
