@@ -2,12 +2,11 @@ import os
 
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Vendedor(models.Model):
-    usuario = models.CharField(20)
-    nombre = models.CharField(max_length=50)
-    contraseña = models.CharField(max_length=50)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     foto_perfil = models.FilePathField(
         path=os.path.join(settings.BASE_DIR, "app/static/"),
         default=os.path.join(settings.BASE_DIR, "app/static/dummy.png"),
@@ -32,11 +31,8 @@ class Vendedor(models.Model):
         choices=OPCIONES_FORMAS_DE_PAGO,
         default='F00',
     )
-    latitud = models.FloatField()
-    longitud = models.FloatField()
-
-    class Meta:
-        abstract = True
+    latitud = models.FloatField(null=True)
+    longitud = models.FloatField(null=True)
 
 
 class Vendedor_Fijo(Vendedor):
@@ -72,8 +68,7 @@ class Producto(models.Model):
 
 
 class Alumno(models.Model):
-    usuario = models.CharField(max_length=20)
-    contraseña = models.CharField(max_length=50)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
 class Seguimiento(models.Model):
