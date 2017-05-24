@@ -34,6 +34,9 @@ class Vendedor(models.Model):
     latitud = models.FloatField(null=True)
     longitud = models.FloatField(null=True)
 
+    def __str__(self):
+        return self.user.email
+
 
 class Vendedor_Fijo(Vendedor):
     hora_inicio = models.TimeField()
@@ -69,6 +72,9 @@ class Producto(models.Model):
 
 class Alumno(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.email
 
 
 class Seguimiento(models.Model):
