@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from .models import Alumno
+from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante
 
 
 def index(request):
@@ -66,15 +66,22 @@ def signup(request):
         contraseña_r = request.POST['password2']
 
         if contraseña == contraseña_r:
-            if tipo == '3':
-                u = User.objects.create_user(email, email, contraseña)
-                u.first_name = nombre
+            if tipo != '1' and tipo != '2' and tipo != '3':
+                return HttpResponse("Usuario no creado")
+            u = User.objects.create_user(email, email, contraseña)
+            u.first_name = nombre
+            if tipo == '1':
+                g = Group.objects.get(name="Vendedor_Fijo")
+                Vendedor_Fijo.objects.create(user=u, foto_perfil=foto_perfil)
+            elif tipo == '2':
+                g = Group.objects.get(name="Vendedor_Ambulante")
+                Vendedor_Ambulante.objects.create(user=u, foto_perfil=foto_perfil)
+            elif tipo == '3':
                 g = Group.objects.get(name="Clientes")
                 g.user_set.add(u)
-                u.save()
-                Alumno.objects.create(user=u)
-                return redirect("login")
-            return HttpResponse("Usuario no creado")
+            g.user_set.add(u)
+            u.save()
+            return redirect("login")
 
         else:
             return HttpResponse(render(request, 'app/signup.html', {'errores': "las constraseñas no coinciden"}))
