@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante
+from .forms import ProductoForm
 
 
 def index(request):
@@ -132,5 +133,16 @@ def vendedor_fijo(request, vendedor_id):
     }))
 
 
+#def gestion_productos(request):
+#    return HttpResponse("gestion de productos")
+
 def gestion_productos(request):
-    return HttpResponse("gestion de productos")
+    if request.method == 'POST':
+        form = ProductoForm(request.POST)
+        producto = form.save(commit=False)
+        producto.vendedor = Vendedor.objects.get(user=request.user)
+        producto.save()
+        return redirect('vendedor')
+    else:
+        form = ProductoForm()
+    return render(request, 'app/producto_form.html', {'form':form})

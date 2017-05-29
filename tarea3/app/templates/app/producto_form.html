@@ -1,0 +1,50 @@
+{% extends 'app/base.html' %}
+{% block content %}
+
+<main>
+    <div class="section"></div>
+
+    <h4 class="teal-text" style="text-align: center;">Agregar Item</h4>
+    <div class="section"></div>
+
+    <div class="container">
+        <div class="z-depth-1 grey lighten-4 row"
+        style="margin-left: 5%; margin-right: 5%; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
+
+        <form action="{% url 'gestion-productos' %}" class="col s12 m12" method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class='row'>
+                <div class='input-field col s12 m12'>
+                    &ensp;{{ field.label_tag }}<br>
+                    <div class="input-field inline ">
+                        {{ field.errors }}
+                        <div style="text-align: center">{{ field }}</div>
+                        {% if field.help_text %}
+                        <p class="help">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class='row'>
+                <button type='submit' name='btn_login' class='col l6 offset-l3 btn btn-large waves-effect teal'>
+                    Agregar Producto
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+</main>
+
+
+
+{% endblock %}
+
+
+
