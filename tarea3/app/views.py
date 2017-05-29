@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login as enter, logout
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante
 
@@ -94,5 +94,38 @@ def signout(request):
     logout(request)
     return redirect('index')
 
+
 def vendedor(request):
     return HttpResponse(render(request, 'app/vendedor-profile-page.html', {}))
+
+
+def vendedor_ambulante(request, vendedor_id):
+    v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
+    productos = {}
+    return HttpResponse(render(request, 'app/vendedor-profile-page.html', {
+        'nombre_vendedor': v.user.first_name,
+        'tipo_vendedor': 'Ambulante',
+        'estado_vendedor': v.actividad,
+        'formas_pago': {},
+        'num_favoritos': '5',
+        'productos': productos
+    }))
+
+
+def vendedor_fijo(request, vendedor_id):
+    v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
+    productos = {}
+    return HttpResponse(render(request, 'app/vendedor-profile-page.html', {
+        'nombre_vendedor': v.user.first_name,
+        'tipo_vendedor': 'Fijo',
+        'horainicio_vendedor': v.hora_inicio,
+        'horatermino_vendedor': v.hora_termino,
+        'estado_vendedor': v.actividad,
+        'formas_pago': {},
+        'num_favoritos': '5',
+        'productos': productos
+    }))
+
+
+def gestion_productos(request):
+    return HttpResponse("gestion de productos")
