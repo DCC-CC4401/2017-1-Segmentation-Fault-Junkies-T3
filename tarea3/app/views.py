@@ -95,7 +95,12 @@ def signout(request):
     return redirect('index')
 
 
-def vendedor(request):
+def vendedor(request, id_vendedor):
+    if request.user.id == id_vendedor:
+        if request.user.groups.all()[0].name == 'Vendedores_Ambulantes':
+            return vendedor_ambulante(request, id_vendedor)
+        if request.user.groups.all()[0].name == 'Vendedores_Fijos':
+            return vendedor_fijo(request, id_vendedor)
     return HttpResponse(render(request, 'app/vendedor-profile-page.html', {}))
 
 
