@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante
+from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante, Vendedor
 from .forms import ProductoForm
 
 
@@ -32,9 +32,8 @@ def index(request):
         }
         return render(request, 'app/index.html', context)
 
-    if g.name == "Vendedor_Fijo" or g.name == "Vendedor_Ambulante":
-        # TODO redireccionar a la landpage de vendedores
-        pass
+    if g.name == "Vendedores_Fijos" or g.name == "Vendedores_Ambulantes":
+        return redirect('vendedor', id_vendedor=request.user.id)
 
 
 def login(request):
@@ -72,14 +71,14 @@ def signup(request):
             u = User.objects.create_user(email, email, contraseña)
             u.first_name = nombre
             if tipo == '1':
-                g = Group.objects.get(name="Vendedor_Fijo")
+                g = Group.objects.get(name="Vendedores_Fijos")
                 Vendedor_Fijo.objects.create(user=u, foto_perfil=foto_perfil)
             elif tipo == '2':
-                g = Group.objects.get(name="Vendedor_Ambulante")
+                g = Group.objects.get(name="Vendedores_Ambulantes")
                 Vendedor_Ambulante.objects.create(user=u, foto_perfil=foto_perfil)
             elif tipo == '3':
                 g = Group.objects.get(name="Clientes")
-                g.user_set.add(u)
+                Alumno.objects.create(user=u, foto_perfil=foto_perfil)
             g.user_set.add(u)
             u.save()
             return redirect("login")
@@ -108,20 +107,21 @@ def vendedor(request, id_vendedor):
 def vendedor_ambulante(request, vendedor_id):
     v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
     productos = {}
-    return HttpResponse(render(request, 'app/vendedor-profile-page.html', {
+    return render(request, 'app/vendedor-profile-page.html', {
         'nombre_vendedor': v.user.first_name,
         'tipo_vendedor': 'Ambulante',
         'estado_vendedor': v.actividad,
         'formas_pago': {},
         'num_favoritos': '5',
-        'productos': productos
-    }))
+        'productos': productos,
+        'authenticated': True
+    })
 
 
 def vendedor_fijo(request, vendedor_id):
     v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
     productos = {}
-    return HttpResponse(render(request, 'app/vendedor-profile-page.html', {
+    return render(request, 'app/vendedor-profile-page.html', {
         'nombre_vendedor': v.user.first_name,
         'tipo_vendedor': 'Fijo',
         'horainicio_vendedor': v.hora_inicio,
@@ -129,20 +129,21 @@ def vendedor_fijo(request, vendedor_id):
         'estado_vendedor': v.actividad,
         'formas_pago': {},
         'num_favoritos': '5',
-        'productos': productos
-    }))
+        'productos': productos,
+        'authenticated': True
+    })
 
-
-#def gestion_productos(request):
-#    return HttpResponse("gestion de productos")
 
 def gestion_productos(request):
     if request.method == 'POST':
         form = ProductoForm(request.POST)
-        producto = form.save(commit=False)
-        producto.vendedor = Vendedor.objects.get(user=request.user)
-        producto.save()
-        return redirect('vendedor')
+        if form.is_valid():
+            producto = form.save(commit=False)
+            producto.vendedor = Vendedor.objects.get(user=request.user)
+            producto.save()
+            return redirect('index')
+        else:
+            print('no')
     else:
         form = ProductoForm()
     return render(request, 'app/producto_form.html', {'form':form})

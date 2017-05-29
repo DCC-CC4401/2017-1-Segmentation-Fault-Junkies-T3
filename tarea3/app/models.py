@@ -65,7 +65,7 @@ class Producto(models.Model):
         choices=OPCIONES_CATEGORIA,
         default='C00',
     )
-    foto = models.ImageField()
+    foto = models.ImageField(upload_to='fotos', default='img/AvatarVendedor1.png')
     vendedor = models.ForeignKey(
         Vendedor,
         on_delete=models.CASCADE
