@@ -7,7 +7,33 @@ from .models import Alumno
 
 
 def index(request):
-    return HttpResponse(render(request, 'app/index.html', {}))
+    # Aquí es posible obtener el usuario adjunto en el request, ver si está autentificado, y si es necesario, obtener
+    # detalles sobre él para pasárselos al template."""
+
+    if not request.user.is_authenticated:
+        context = {
+            'authenticated': False
+        }
+        return render(request, 'app/index.html', context)
+
+    # Se utilizan los grupos de django para checkear rápidamente de qué tipo de usuario se trata. En el signup se le
+    # asoció el grupo respectivo al usuario creado. Los grupos son "Clientes", "Vendedores_Fijos",
+    # "Vendedores_Ambulantes" y deben ser creados manualmente en la máquina donde corre la aplicación
+    # (e.g >>> Group.objects.create(name="Clientes"))
+    g = request.user.groups.all()[0]
+    if g.name == "Clientes":
+        c = Alumno.objects.get(user=request.user)
+        # información para entregar al template
+        context = {
+            'authenticated': True,
+            'user_type': 'cliente',
+            'user_id': request.user.id
+        }
+        return render(request, 'app/index.html', context)
+
+    if g.name == "Vendedor_Fijo" or g.name == "Vendedor_Ambulante":
+        # TODO redireccionar a la landpage de vendedores
+        pass
 
 
 def login(request):
@@ -43,9 +69,11 @@ def signup(request):
             if tipo == '3':
                 u = User.objects.create_user(email, email, contraseña)
                 u.first_name = nombre
+                g = Group.objects.get(name="Clientes")
+                g.user_set.add(u)
                 u.save()
                 Alumno.objects.create(user=u)
-                return HttpResponse("Usuario creado")
+                return redirect("login")
             return HttpResponse("Usuario no creado")
 
         else:
