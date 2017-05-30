@@ -20,7 +20,7 @@ def index(request):
     if not context['authenticated'] or context['user_type'] == "cliente":
         return render(request, 'app/index.html', context)
     elif context['user_type'] == "vendedor_fijo" or context['user_type'] == "vendedor_ambulante":
-        return redirect('vendedor')
+        return redirect('vendedor/' + str(context['user_id']), context['user_id'])
 
 
 def login(request):
@@ -82,14 +82,13 @@ def signout(request):
     return redirect('index')
 
 
-def vendedor(request):
-    if not request.user.is_authenticated or request.user.groups.all()[0] == 'cliente':
-        raise Http404("Alumno intenta acceder a su profile de vendedor.")
-    if request.user.groups.all()[0].name == 'Vendedores_Ambulantes':
+def vendedor(request, id_vendedor):
+    vendedor = get_object_or_404(User, id=id_vendedor)
+    if vendedor.groups.all()[0].name == 'Vendedores_Ambulantes':
         return vendedor_ambulante(request, request.user.id)
-    if request.user.groups.all()[0].name == 'Vendedores_Fijos':
+    if vendedor.groups.all()[0].name == 'Vendedores_Fijos':
         return vendedor_fijo(request, request.user.id)
-
+    raise Http404("Id de vendedor invalido.")
 
 def vendedor_ambulante(request, id_vendedor):
     v = get_object_or_404(Vendedor_Ambulante, user=id_vendedor)
