@@ -16,9 +16,9 @@ def index(request):
     # "Vendedores_Ambulantes" y deben ser creados manualmente en la máquina donde corre la aplicación
     # (e.g >>> Group.objects.create(name="Clientes"))
     context = get_global_context(request)
-    if not context['authenticated'] or context['user_type'] == "Clientes":
+    if not context['authenticated'] or context['user_type'] == "cliente":
         return render(request, 'app/index.html', context)
-    elif context['user_type'] == "Vendedores_Fijos" or context['user_type'] == "Vendedores_Ambulantes":
+    elif context['user_type'] == "vendedor_fijo" or context['user_type'] == "vendedor_ambulante":
         return redirect('vendedor', id_vendedor=request.user.id)
 
 
