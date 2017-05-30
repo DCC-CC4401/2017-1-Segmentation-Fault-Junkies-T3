@@ -1,0 +1,127 @@
+{% extends 'app/base.html' %}
+{% block content %}
+{% load static %}
+
+<script>
+ $(document).ready(function(){
+    $('.modal').modal();
+  });
+
+</script>
+<main>
+    <div class="container">
+        <div id="profile-page-header" class="card">
+            <div class="card-image waves-effect waves-block waves-light">
+                <img class="activator" src="{% static 'img/food-background3.png' %}" alt="user background">
+            </div>
+            <div class="row hide-on-small-and-down">
+                <a class="card-profile-image-large">
+                    <img style="margin-top: 20%;" src="{% static 'img/AvatarVendedor6.png' %}" alt="profile image"
+                         class="circle z-depth-2 responsive-img activator">
+                </a>
+            </div>
+            <div class="row show-on-small hide-on-med-and-up">
+                <a class="card-profile-image-small">
+                    <img src="{% static 'img/AvatarVendedor6.png' %}" alt="profile image"
+                         class="circle z-depth-2 responsive-img activator">
+                </a>
+            </div>
+            <div class="card-content s12">
+                <div class="row">
+                    <div class="col s3 offset-s2 hide-on-med-and-down">
+                        <h4 class="card-title grey-text flow-text text-darken-4">{{ nombre_vendedor }}</h4>
+                        <p class="medium-small flow-text grey-text">&emsp;&emsp;&ensp;{{ tipo_vendedor }}</p>
+                        {% if horainicio_vendedor %}
+                        <p class="flow-text text-darken-4" style="font-size: 0.88rem;">
+                            &emsp;&emsp;Horario: <a class="light-green-text">{{ horaincio_vendedor }}-{{
+                            horatermino_vendedor }}</a>
+                        </p>
+                        {% endif %}
+                    </div>
+                    <div class="col s3 l2 hide-on-med-and-down center-align">
+                        <h4 class="card-title flow-text text-darken-4">Estado</h4>
+                        <p class="medium-small flow-text light-green-text">{{ estado_vendedor }}</p>
+                    </div>
+                    <div class="col s3 l2 hide-on-med-and-down center-align">
+                        <h8 class=" grey-text flow-text text-darken-4" style="font-size: 1.3rem;">Formas de pago</h8>
+                        {% for pago in formas_pago %}
+                        <p class="medium-small flow-text grey-text">{{ pago }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="col s3 l2 hide-on-med-and-down center-align">
+                        <div class="switch" style="margin-left: 10px;">
+                            <label>
+                                <h4 class="card-title grey-text flow-text text-darken-4">Favorito</h4>
+                                <!--<input type="checkbox"><span class="lever"></span>-->
+                                <h6><i class="material-icons amber-text">grade</i>
+                                    <span class=" grey-text flow-text text-darken-4"
+                                          style="font-size:24px; line-height:35px;">{{ num_favoritos }}</span>
+                                </h6>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col s3 l2 hide-on-med-and-down right-align">
+                    <a src="google.com" class="btn-floating activator waves-effect waves-light darken-2">
+                        <i class="material-icons">mode_edit</i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="profile-page-content" class="row">
+        <div id="profile-page-wall" class="col s12 m8">
+            <div class="col s12 z-depth-1">
+                <div class="tab-content col s12">
+                    <div class="container">
+                        <div class="section">
+                            <div class="row">
+                                {% for producto in productos %}
+                                <div class="col s6 m6 l4">
+                                    <div class="container">
+                                        <div class="card z-depth-1">
+                                            <div class="teal lighten-2 card-image waves-effect waves-block waves-light">
+                                                <img class="activator responsive-img center-block"
+                                                     style="max-width: 30%; margin-top:20px; margin-bottom:20px;"
+                                                     src="{{ producto.foto }}">
+                                            </div>
+                                            <div class="card-content">
+                                                    <span class="card-title activator grey-text text-darken-4">{{ producto.nombre }}<i
+                                                            class="material-icons right">more_vert</i></span>
+                                                <p><a class="teal-text">{{ producto.precio }}</a></p>
+                                            </div>
+                                            <div class="card-reveal">
+                                                    <span class="card-title grey-text text-darken-4">{{ producto.nombre }}<i
+                                                            class="material-icons right">close</i></span>
+                                                <ul>
+                                                    <li>Precio: <a class="green-text light-green-text">{{
+                                                        producto.precio }}</a></li>
+                                                    <li>Categoria: {{ producto.categoria }}</li>
+                                                    <li>Stock: {{ producto.cantidad }}</li>
+                                                    <li>Descripción: {{ producto.descripcion }}
+                                                        <p class="right-align"><a class="waves-effect waves-light"
+                                                                                  href="#modal2">Ver imagen</a></p>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class='row'>
+                    <a class='col l5 offset-l4 btn btn-large waves-effect button teal'
+                       href="{% url 'gestionproductos' %}">Agregar Item</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
