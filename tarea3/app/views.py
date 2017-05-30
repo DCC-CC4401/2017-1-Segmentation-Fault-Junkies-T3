@@ -3,36 +3,22 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante, Vendedor
 from .forms import ProductoForm
+from .models import Alumno, Vendedor_Fijo, Vendedor_Ambulante, Vendedor, Producto, Seguimiento
 
 
 def index(request):
     # Aquí es posible obtener el usuario adjunto en el request, ver si está autentificado, y si es necesario, obtener
     # detalles sobre él para pasárselos al template."""
 
-    if not request.user.is_authenticated:
-        context = {
-            'authenticated': False
-        }
-        return render(request, 'app/index.html', context)
-
     # Se utilizan los grupos de django para checkear rápidamente de qué tipo de usuario se trata. En el signup se le
     # asoció el grupo respectivo al usuario creado. Los grupos son "Clientes", "Vendedores_Fijos",
     # "Vendedores_Ambulantes" y deben ser creados manualmente en la máquina donde corre la aplicación
     # (e.g >>> Group.objects.create(name="Clientes"))
-    g = request.user.groups.all()[0]
-    if g.name == "Clientes":
-        c = Alumno.objects.get(user=request.user)
-        # información para entregar al template
-        context = {
-            'authenticated': True,
-            'user_type': 'cliente',
-            'user_id': request.user.id
-        }
+    context = get_global_context(request)
+    if not context['authenticated'] or context['user_type'] == "Clientes":
         return render(request, 'app/index.html', context)
-
-    if g.name == "Vendedores_Fijos" or g.name == "Vendedores_Ambulantes":
+    elif context['user_type'] == "Vendedores_Fijos" or context['user_type'] == "Vendedores_Ambulantes":
         return redirect('vendedor', id_vendedor=request.user.id)
 
 
@@ -106,32 +92,32 @@ def vendedor(request, id_vendedor):
 
 def vendedor_ambulante(request, vendedor_id):
     v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
-    productos = {}
-    return render(request, 'app/vendedor-profile-page.html', {
+    context = get_global_context(request)
+    context.update({
         'nombre_vendedor': v.user.first_name,
         'tipo_vendedor': 'Ambulante',
         'estado_vendedor': v.actividad,
-        'formas_pago': {},
-        'num_favoritos': '5',
-        'productos': productos,
-        'authenticated': True
+        'formas_pago': v.formas_de_pago,
+        'num_favoritos': Seguimiento.objects.filter(vendedor=vendedor_id).count(),
+        'productos': Producto.objects.filter(vendedor=vendedor_id)
     })
+    return render(request, 'app/vendedor-profile-page.html', context)
 
 
 def vendedor_fijo(request, vendedor_id):
     v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
-    productos = {}
-    return render(request, 'app/vendedor-profile-page.html', {
+    context = get_global_context(request)
+    context.update({
         'nombre_vendedor': v.user.first_name,
         'tipo_vendedor': 'Fijo',
         'horainicio_vendedor': v.hora_inicio,
         'horatermino_vendedor': v.hora_termino,
         'estado_vendedor': v.actividad,
-        'formas_pago': {},
-        'num_favoritos': '5',
-        'productos': productos,
-        'authenticated': True
+        'formas_pago': v.formas_de_pago,
+        'num_favoritos': Seguimiento.objects.filter(vendedor=vendedor_id).count(),
+        'productos': Producto.objects.filter(vendedor=vendedor_id)
     })
+    return render(request, 'app/vendedor-profile-page.html', context)
 
 
 def gestion_productos(request):
@@ -147,3 +133,25 @@ def gestion_productos(request):
     else:
         form = ProductoForm()
     return render(request, 'app/producto_form.html', {'form':form})
+
+
+# El contexto general que se pasa a los templates, incluye un bool que indica si hay usuario logeado, tipo de usuario,
+# id, nombre.
+def get_global_context(request):
+    context = {}
+    if not request.user.is_authenticated:
+        context['authenticated'] = False
+    else:
+        g = request.user.groups.all()[0]
+        context.update({
+            'authenticated': True,
+            'user_id': request.user.id,
+            'user_name': request.user.get_short_name()
+        })
+        if g.name == "Clientes":
+            context['user_type'] = 'cliente'
+        elif g.name == "Vendedores_Fijos":
+            context['user_type'] = 'vendedor_fijo'
+        elif g.name == "Vendedores_Ambulantes":
+            context['user_type'] = 'vendedor_ambulante'
+    return context
