@@ -9,5 +9,8 @@ urlpatterns = [
     url(r'^vendedor/$', views.vendedor, name='vendedor'),
     url(r'^gestion-productos/$', views.gestion_productos, name='gestionproductos'),
     url(r'^signout/$', views.signout, name='signout'),
-    url(r'^vendedor/(?P<id_vendedor>[0-9]+)/$', views.vendedor, name='vendedor')
+    # Es necesario para que un alumno pueda distinguir y visitar vendedores de distinto tipo
+    # pero con mismo id.
+    url(r'^vendedor/fijo/(?P<id_vendedor>[0-9]+)/$', views.vendedor_fijo, name='vendedor-fijo'),
+    url(r'^vendedor/ambulante/(?P<id_vendedor>[0-9]+)/$', views.vendedor_ambulante, name='vendedor-ambulante')
 ]
