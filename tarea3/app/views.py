@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login as enter, logout
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import ProductoForm
@@ -16,6 +16,7 @@ def index(request):
     # "Vendedores_Ambulantes" y deben ser creados manualmente en la máquina donde corre la aplicación
     # (e.g >>> Group.objects.create(name="Clientes"))
     context = get_global_context(request)
+    context['map'] = True
     if not context['authenticated'] or context['user_type'] == "Clientes":
         return render(request, 'app/index.html', context)
     elif context['user_type'] == "Vendedores_Fijos" or context['user_type'] == "Vendedores_Ambulantes":
@@ -81,31 +82,31 @@ def signout(request):
     return redirect('index')
 
 
-def vendedor(request, id_vendedor):
-    if request.user.id == id_vendedor:
-        if request.user.groups.all()[0].name == 'Vendedores_Ambulantes':
-            return vendedor_ambulante(request, id_vendedor)
-        if request.user.groups.all()[0].name == 'Vendedores_Fijos':
-            return vendedor_fijo(request, id_vendedor)
-    return HttpResponse(render(request, 'app/vendedor-profile-page.html', {}))
+def vendedor(request):
+    if not request.user.is_authenticated or request.user.groups.all()[0] == 'cliente':
+        raise Http404("Alumno intenta acceder a su profile de vendedor.")
+    if request.user.groups.all()[0].name == 'Vendedores_Ambulantes':
+        return vendedor_ambulante(request, request.user.id)
+    if request.user.groups.all()[0].name == 'Vendedores_Fijos':
+        return vendedor_fijo(request, request.user.id)
 
 
-def vendedor_ambulante(request, vendedor_id):
-    v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
+def vendedor_ambulante(request, id_vendedor):
+    v = get_object_or_404(Vendedor_Ambulante, pk=id_vendedor)
     context = get_global_context(request)
     context.update({
         'nombre_vendedor': v.user.first_name,
         'tipo_vendedor': 'Ambulante',
         'estado_vendedor': v.actividad,
         'formas_pago': v.formas_de_pago,
-        'num_favoritos': Seguimiento.objects.filter(vendedor=vendedor_id).count(),
-        'productos': Producto.objects.filter(vendedor=vendedor_id)
+        'num_favoritos': Seguimiento.objects.filter(vendedor=id_vendedor).count(),
+        'productos': Producto.objects.filter(vendedor=id_vendedor)
     })
     return render(request, 'app/vendedor-profile-page.html', context)
 
 
-def vendedor_fijo(request, vendedor_id):
-    v = get_object_or_404(Vendedor_Ambulante, pk=vendedor_id)
+def vendedor_fijo(request, id_vendedor):
+    v = get_object_or_404(Vendedor_Ambulante, pk=id_vendedor)
     context = get_global_context(request)
     context.update({
         'nombre_vendedor': v.user.first_name,
@@ -114,8 +115,8 @@ def vendedor_fijo(request, vendedor_id):
         'horatermino_vendedor': v.hora_termino,
         'estado_vendedor': v.actividad,
         'formas_pago': v.formas_de_pago,
-        'num_favoritos': Seguimiento.objects.filter(vendedor=vendedor_id).count(),
-        'productos': Producto.objects.filter(vendedor=vendedor_id)
+        'num_favoritos': Seguimiento.objects.filter(vendedor=id_vendedor).count(),
+        'productos': Producto.objects.filter(vendedor=id_vendedor)
     })
     return render(request, 'app/vendedor-profile-page.html', context)
 
