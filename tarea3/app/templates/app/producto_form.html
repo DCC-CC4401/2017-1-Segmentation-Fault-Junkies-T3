@@ -11,7 +11,7 @@
         <div class="z-depth-1 grey lighten-4 row"
         style="margin-left: 5%; margin-right: 5%; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
 
-        <form action="{% url 'gestion-productos' %}" class="col s12 m12" method="post">
+        <form action="{% url 'gestionproductos' %}" class="col s12 m12" method="post">
             {% csrf_token %}
             {% for field in form %}
             <div class='row'>

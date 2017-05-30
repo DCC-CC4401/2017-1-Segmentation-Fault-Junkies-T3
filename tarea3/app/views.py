@@ -20,7 +20,7 @@ def index(request):
     if not context['authenticated'] or context['user_type'] == "cliente":
         return render(request, 'app/index.html', context)
     elif context['user_type'] == "vendedor_fijo" or context['user_type'] == "vendedor_ambulante":
-        return redirect('vendedor', id_vendedor=request.user.id)
+        return redirect('vendedor')
 
 
 def login(request):
@@ -92,7 +92,7 @@ def vendedor(request):
 
 
 def vendedor_ambulante(request, id_vendedor):
-    v = get_object_or_404(Vendedor_Ambulante, pk=id_vendedor)
+    v = get_object_or_404(Vendedor_Ambulante, user=id_vendedor)
     context = get_global_context(request)
     context.update({
         'nombre_vendedor': v.user.first_name,
@@ -133,7 +133,16 @@ def gestion_productos(request):
             print('no')
     else:
         form = ProductoForm()
-    return render(request, 'app/producto_form.html', {'form':form})
+    v = get_object_or_404(Vendedor_Ambulante, user=request.user.id)
+    context = get_global_context(request)
+    context.update({
+        'nombre_vendedor': v.user.first_name
+    })
+    return render(request, 'app/producto_form.html', {
+        'form': form,
+
+
+    })
 
 
 # El contexto general que se pasa a los templates, incluye un bool que indica si hay usuario logeado, tipo de usuario,
