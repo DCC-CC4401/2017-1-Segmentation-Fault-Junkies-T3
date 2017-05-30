@@ -17,10 +17,10 @@ def index(request):
     # (e.g >>> Group.objects.create(name="Clientes"))
     context = get_global_context(request)
     context['map'] = True
-    if not context['authenticated'] or context['user_type'] == "Clientes":
+    if not context['authenticated'] or context['user_type'] == "cliente":
         return render(request, 'app/index.html', context)
-    elif context['user_type'] == "Vendedores_Fijos" or context['user_type'] == "Vendedores_Ambulantes":
-        return redirect('vendedor', id_vendedor=request.user.id)
+    elif context['user_type'] == "vendedor_fijo" or context['user_type'] == "vendedor_ambulante":
+        return redirect('vendedor/' + str(context['user_id']), context['user_id'])
 
 
 def login(request):
@@ -82,17 +82,16 @@ def signout(request):
     return redirect('index')
 
 
-def vendedor(request):
-    if not request.user.is_authenticated or request.user.groups.all()[0] == 'cliente':
-        raise Http404("Alumno intenta acceder a su profile de vendedor.")
-    if request.user.groups.all()[0].name == 'Vendedores_Ambulantes':
+def vendedor(request, id_vendedor):
+    vendedor = get_object_or_404(User, id=id_vendedor)
+    if vendedor.groups.all()[0].name == 'Vendedores_Ambulantes':
         return vendedor_ambulante(request, request.user.id)
-    if request.user.groups.all()[0].name == 'Vendedores_Fijos':
+    if vendedor.groups.all()[0].name == 'Vendedores_Fijos':
         return vendedor_fijo(request, request.user.id)
-
+    raise Http404("Id de vendedor invalido.")
 
 def vendedor_ambulante(request, id_vendedor):
-    v = get_object_or_404(Vendedor_Ambulante, pk=id_vendedor)
+    v = get_object_or_404(Vendedor_Ambulante, user=id_vendedor)
     context = get_global_context(request)
     context.update({
         'nombre_vendedor': v.user.first_name,
@@ -133,7 +132,16 @@ def gestion_productos(request):
             print('no')
     else:
         form = ProductoForm()
-    return render(request, 'app/producto_form.html', {'form':form})
+    v = get_object_or_404(Vendedor_Ambulante, user=request.user.id)
+    context = get_global_context(request)
+    context.update({
+        'nombre_vendedor': v.user.first_name
+    })
+    return render(request, 'app/producto_form.html', {
+        'form': form,
+
+
+    })
 
 
 # El contexto general que se pasa a los templates, incluye un bool que indica si hay usuario logeado, tipo de usuario,
